@@ -4,5 +4,3 @@
 - como ler o arquivo criado de audio no outro computador?
 - grafico de fourier ta certo?
 - pq as frequencias n estao abaixo de 18khz e acima de 10khz?
-
-- demodular audio
