@@ -5,19 +5,14 @@ import sounddevice as sd
 import matplotlib.pyplot as plt
 import time
 import soundfile
-from scipy import signal
-from scipy.fftpack import fft
 
 audio_modulado, samplerate = soundfile.read('modulado.wav')
-print("oi", max(audio_modulado), min(audio_modulado))
 
 calculo_fourier = sbs.signalMeu()
-frequencias, amplitudes = calculo_fourier.calcFFT(audio_modulado, samplerate)
-
-print("oi", max(frequencias), min(frequencias))
-
-if max(frequencias) < 18000 and min(frequencias) > 10000:
-    print("Confirmado que o sinal esta entre 10kHz e 18kHz")
+calculo_fourier.plotFFT(audio_modulado, samplerate)
+plt.xlabel("frequencia")
+plt.ylabel("sinal de audio modulado")
+plt.show()
 
 # demodular audio
 audio_duration = len(audio_modulado)/samplerate
@@ -26,19 +21,19 @@ t = np.linspace(0, audio_duration, len(audio_modulado), endpoint=False)
 w = 2 * np.pi * 14000
 portadora = 1 * np.sin(w*t)
 
-audio_demodulado = audio_modulado / portadora
+audio_demodulado = audio_modulado * portadora
 
 # filtrar frequencias
-nyq_rate = samplerate/2
-width = 5.0/nyq_rate
-ripple_db = 60.0 #dB
-N , beta = signal.kaiserord(ripple_db, width)
-cutoff_hz = 4000.0
-taps = signal.firwin(N, cutoff_hz/nyq_rate, window=('kaiser', beta))
+a = 0.009235
+b = 0.008398
+c = 1
+d = -1.734
+e = 0.7521
 
-audio_filtrado = signal.lfilter(taps, 1.0, audio_demodulado)
-sd.play(audio_filtrado)
-time.sleep(5)
+audio_filtrado = [audio_demodulado[0], audio_demodulado[1]]
+for k in range(2, len(audio_demodulado)):
+      Y = -d * audio_filtrado[k - 1] - e * audio_filtrado[k - 2] + a * audio_demodulado[k - 1] + b * audio_demodulado[k - 2]
+      audio_filtrado.append(Y)
 
 # grafico 5
 plt.plot(t, audio_demodulado)
